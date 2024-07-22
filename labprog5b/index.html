@@ -1,0 +1,140 @@
+1. Develop a registration page for student enrolment as done in Module 2 but without 
+page refresh using AJAX.
+registerAJAX.html
+{% extends 'basicTemplate.html' %}
+{% block title %} Course Registration Using AJAX Call {% endblock %}
+{% block content %}
+<h1> Course Registration using AJAX Call</h1>
+HTML Form Structure:
+<form action="" method="POST">
+ {% csrf_token %}
+ Select USN: <select name="student" id="susn">
+ {% for s in studentList %}
+ <option value="{{s.id}}">{{s.usn}}</option>
+ {% endfor %}
+ </select>
+ Select Course Code:
+ <select name="course" id="ccode">
+ {% for c in courseList %}
+ <option value="{{c.id}}">{{c.courseCode}}</option>
+ {% endfor %}
+ </select>
+ <input type="button" value="ENROLL" id="btn"/>
+ <span id="resp"></span>
+</form>
+JavaScript (jQuery) Code:
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+<script>
+ $(document).ready(function(){
+ $("#btn").click(function(){
+ var usnid=$("#susn").val();
+ var ccodeid=$("#ccode").val();
+ $.ajax({
+ type:"POST",
+ url:"/registerajax/",
+ data:{"usnid":usnid,"ccodeid":ccodeid,csrfmiddlewaretoken:"{{csrf_token}}"},
+ success: function(response){
+ $("#resp").html(response);
+ }
+ });
+ });
+ });
+</script>
+{% endblock %}
+
+######################################################################################
+
+2. Develop a search application in Django using AJAX that displays courses enrolled by a 
+student being searched.
+enrolledAJAX.html
+<h1> Enrolled List using AJAX Call </h1>
+HTML Form Structure:
+<form action="" method="POST">
+Select Course Code: <select name="course" id="ccode">
+ {% for c in courseList %}
+ <option value="{{c.id}}">{{c.courseCode}}</option>
+ {% endfor %}
+</select>
+<input type="button" value="SEARCH" id="btn"/>
+<span id="resp"></span>
+{% if studentList %}
+<table border="1">
+ <tr>
+ <th>
+ SLNO
+ </th>
+ <th>
+ USN
+ </th>
+ <th>
+ NAME
+ </th>
+ <th>
+ SEM
+ </th>
+ </tr>
+ {% for s in studentList %}
+ <tr>
+ <td>{{forloop.counter}}</td>
+ <td>{{s.usn}}</td>
+ <td>{{s.name}}</td>
+ <td>{{s.sem}}</td>
+ </tr>
+ {% endfor %}
+</table>
+{% endif %}
+</form>
+JavaScript (jQuery) Code:
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+<script>
+ $(document).ready(function(){
+ $("#btn").click(function(){
+ 
+ var ccodeid=$("#ccode").val();
+ $.ajax({
+ type:"POST",
+ url:"/enrolledlistajax/",
+ data:{"ccodeid":ccodeid,csrfmiddlewaretoken:"{{csrf_token}}"},
+ success: function(response){
+ $("#resp").html(response);
+ }
+ });
+ });
+ });
+</script>
+
+################################################################################
+
+views.py
+def registerajax(request):
+ if request.method=="POST":
+ sid=request.POST.get('usnid')
+ cid=request.POST.get('ccodeid')
+ studentobj=student.objects.get(id=sid)
+ courseobj=course.objects.get(id=cid)
+ res=studentobj.courses.filter(id=cid)
+ if res:
+ resp="<h1>Already Registered for this course</h1>"
+ return HttpResponse(resp)
+ studentobj.courses.add(courseobj)
+ resp="<h1>Successfully Registered</h1>"
+ return HttpResponse(resp)
+ else:
+ studentobjs=student.objects.all()
+ courseobjs=course.objects.all()
+return render(request,'registerAJAX.html',{'studentList':studentobjs,'courseList':courseobjs})
+def enrolledlistajax(request):
+ if request.method=="POST":
+ cid=request.POST.get('ccodeid')
+ courseobj=course.objects.get(id=cid)
+ studentlistobj=courseobj.student_set.all()
+ return render(request,'enrolledlistajax.html',{'studentList':studentlistobj})
+ else:
+ courselist=course.objects.all()
+return render(request,'enrolledlistajax.html',{'courseList':courselist})
+
+#################################################################################################3
+
+urls.py
+path('registerajax/',registerajax),
+path('enrolledlistajax/',enrolledlistajax),
