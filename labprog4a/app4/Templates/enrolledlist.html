@@ -1,0 +1,32 @@
+{% extends 'basicTemplate.html' %}
+{% block title %} Course Registration Details {% endblock %}
+{% block content %}
+<form method="POST" action="">
+    {% csrf_token %}
+    Select Course: 
+    <select name="course">
+        {% for c in Course_List %}
+        <option value="{{ c.id }}">{{ c.courseCode }}</option>
+        {% endfor %}
+    </select>
+    <input type="submit" value="Search"/>
+    
+    {% if student_list %}
+    <h1>List of Students registered for the course {{ course.courseCode }}</h1>
+    <table border="1">
+        <tr>
+            <th>USN</th>
+            <th>NAME</th>
+            <th>SEM</th>
+        </tr>
+        {% for s in student_list %}
+        <tr>
+            <td>{{ s.usn }}</td>
+            <td>{{ s.name }}</td>
+            <td>{{ s.sem }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+    {% endif %}
+</form>
+{% endblock %}

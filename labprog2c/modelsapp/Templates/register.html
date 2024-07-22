@@ -1,0 +1,21 @@
+{% extends 'basicTemplate.html' %}
+{% block title %} Course Register Page {% endblock %}
+{% block content %}
+<h1>Student Course Registration</h1>
+<form method="POST" action="">
+    {% csrf_token %}
+    Select USN:
+    <select name="student">
+        {% for s in student_list %}
+        <option value="{{ s.id }}">{{ s.usn }}</option>
+        {% endfor %}
+    </select>
+    Select Course:
+    <select name="course">
+        {% for c in course_list %}
+        <option value="{{ c.id }}">{{ c.courseCode }}</option>
+        {% endfor %}
+    </select>
+    <input type="submit" value="ENROLL"/>
+</form>
+{% endblock %}
